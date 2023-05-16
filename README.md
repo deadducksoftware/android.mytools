@@ -1,2 +1,1 @@
-# android.mytools
-My simple command-line setup for developing Androids apps on Linux.
+My simple command-line setup for developing Android apps on Linux.
