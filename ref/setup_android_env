@@ -1,0 +1,112 @@
+#!/usr/bin/env bash
+
+# eclipse-java-*-linux-gtk-x86_64.tar.gz
+# OpenJDK11U-jdk_x64_linux_hotspot_11*.tar.gz
+# commandlinetools-linux-*_latest.zip
+# android.mytools-main.zip
+
+set -e
+
+echo "Finding..."
+
+ECLIPSE_ARCHIVE=`find -maxdepth 1 -type f -name 'eclipse-java-*-linux-gtk-x86_64.tar.gz' -printf '%P\n'`
+
+if [ ! -f "$ECLIPSE_ARCHIVE" ]; then
+	echo "Error: Eclipse archive not found."
+	exit 1
+fi
+
+echo "  found $ECLIPSE_ARCHIVE"
+
+JDK_ARCHIVE=`find -maxdepth 1 -type f -name 'OpenJDK11U-jdk_x64_linux_hotspot_11*.tar.gz' -printf '%P\n'`
+
+if [ ! -f "$JDK_ARCHIVE" ]; then
+	echo "Error: JDK archive not found."
+	exit 1
+fi
+
+echo "  found $JDK_ARCHIVE"
+
+ANDROIDTOOLS_ARCHIVE=`find -maxdepth 1 -type f -name 'commandlinetools-linux-*_latest.zip' -printf '%P\n'`
+
+if [ ! -f "$ANDROIDTOOLS_ARCHIVE" ]; then
+	echo "Error: Android tools archive not found."
+	exit 1
+fi
+
+echo "  found $ANDROIDTOOLS_ARCHIVE"
+
+MYTOOLS_ARCHIVE=android.mytools-main.zip
+
+if [ ! -f "$MYTOOLS_ARCHIVE" ]; then
+	echo "Error: mytools archive not found."
+	exit 1
+fi
+
+echo "  found $MYTOOLS_ARCHIVE"
+
+echo "Unpacking..."
+
+tar -xf "$ECLIPSE_ARCHIVE"
+
+if [ ! -d eclipse ]; then
+	echo "Error: Eclipse unpacked incorrectly."
+	exit 1
+fi
+
+tar -xf "$JDK_ARCHIVE"
+ 
+JDK_UNPACKED=`find -maxdepth 1 -type d -name 'jdk-11.*' -printf '%P\n'`
+
+if [ ! -d "$JDK_UNPACKED" ]; then
+	echo "Error: JDK unpacked incorrectly."
+	exit 1
+fi
+
+unzip -q "$ANDROIDTOOLS_ARCHIVE"
+
+if [ ! -d cmdline-tools ]; then
+	echo "Error: Android tools unpacked incorrectly."
+	exit 1
+fi
+
+mv cmdline-tools tools
+mkdir -p android-sdk/cmdline-tools
+mv tools android-sdk/cmdline-tools
+
+unzip -q "$MYTOOLS_ARCHIVE"
+
+MYTOOLS=android.mytools-main
+
+if [ ! -d "$MYTOOLS" ]; then
+	echo "Error: mytools unpacked incorrectly."
+	exit 1
+fi
+
+mv "$MYTOOLS" android-sdk
+
+echo "Moving..."
+
+mkdir $HOME/Android
+cp "android-sdk/$MYTOOLS/ref/setenv" $HOME/Android
+mv android-sdk ~/.local
+mv eclipse ~/.local
+mv "$JDK_UNPACKED" ~/.local
+
+echo "Installing Launcher..."
+
+ECLIPSE_LAUNCHER=$HOME/.local/share/applications/Eclipse.desktop
+
+echo """[Desktop Entry]
+Version=1.0
+Type=Application
+Terminal=false
+Exec=$HOME/.local/eclipse/eclipse
+Name=Eclipse
+Comment=Eclipse IDE
+Icon=$HOME/.local/eclipse/icon.xpm""" > $ECLIPSE_LAUNCHER
+chmod +x $ECLIPSE_LAUNCHER
+
+echo "Done"
+
+# End

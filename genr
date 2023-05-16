@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+# Generate R.java
+
+set -e
+
+if [ ! -f AndroidManifest.xml ]; then
+	echo "Error: this command must be run from the project root directory."
+	exit 1
+fi
+
+[ ! -d gen ] && mkdir gen
+
+aapt package --non-constant-id -f -m \
+	-I "$ANDROID_HOME/platforms/$ANDROID_PLATFORM/android.jar" \
+	-M AndroidManifest.xml \
+	-S res \
+	-J gen
+
+echo "Updated R.java successfully."
+
+# End

@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+
+# Create Project Key Store
+
+set -e
+
+if [ ! -f AndroidManifest.xml ]; then
+	echo "Error: this command must be run from the project root directory."
+	exit 1
+fi
+
+PROJECT=${PWD##*/}
+
+KEYSTORE=$PROJECT.keystore
+
+if [ -f "$KEYSTORE" ]; then
+	echo "Error: keystore already exists."
+	exit 1
+fi
+
+keytool -genkey -v \
+	-keystore "$KEYSTORE" \
+	-deststoretype pkcs12 \
+	-dname "CN=Steve Walker,OU=Unknown,O=Unknown,L=Unknown,ST=Unknown,C=UK" \
+	-alias "$PROJECT" \
+	-storepass android \
+	-keypass android \
+	-keyalg RSA \
+	-validity 10000  
+
+keytool -list \
+	-keystore "$KEYSTORE" \
+	-storepass android
+
+# End
+

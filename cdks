@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+# Create Debug Key Store
+
+set -e
+
+KEYSTORE=$HOME/.config/android-debug.keystore
+
+if [ -f "$KEYSTORE" ]; then
+	echo "Error: keystore already exists."
+	exit 1
+fi
+
+keytool -genkey -v \
+	-keystore "$KEYSTORE" \
+	-deststoretype pkcs12 \
+	-dname "CN=Android Debug,OU=Android,O=Unknown,L=Unknown,ST=Unknown,C=US" \
+	-alias androiddebugkey \
+	-storepass android \
+	-keypass android \
+	-keyalg RSA \
+	-validity 10000
+
+keytool -list \
+	-keystore "$KEYSTORE" \
+	-storepass android
+
+# End
+

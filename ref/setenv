@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+# Update according to actual versions installed.
+
+export ANDROID_PLATFORM=android-28
+export ANDROID_HOME=$HOME/.local/android-sdk
+export MYTOOLS_HOME=$ANDROID_HOME/android.mytools-main
+export JAVA_HOME=$HOME/.local/jdk-11.0.19+7
+export PATH=$JAVA_HOME/bin:\
+$ANDROID_HOME/build-tools/33.0.1:\
+$ANDROID_HOME/platform-tools:\
+$ANDROID_HOME/cmdline-tools/tools/bin:\
+$MYTOOLS_HOME:\
+$PATH
+

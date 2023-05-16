@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+
+# New Project
+
+set -e
+
+if [ -f AndroidManifest.xml ]; then
+	echo "Error: this command must not be run from an existing project root directory."
+	exit 1
+fi
+
+if [ $# -lt 2 ]; then
+    echo "Usage: `basename $0` name package"
+    echo "Create a new project in the current directory."
+    echo ""
+    echo "  name        the project name"
+    echo "  package     the project Java package"
+    echo ""
+    exit 1
+fi
+
+PROJECT=$1
+PACKAGE=$2
+
+if [ -d "$PROJECT" ]; then
+	echo "Error: project $1 already exists."
+	exit 1
+fi
+
+TEMPLATE=$MYTOOLS_HOME/template.zip
+
+if [ ! -f "$TEMPLATE" ]; then
+	echo "Error: project template not found."
+	exit 1
+fi
+
+unzip -q "$TEMPLATE" -d "$PROJECT"
+
+sed -i "s|%PACKAGE%|$PACKAGE|g" "$PROJECT/AndroidManifest.xml"
+sed -i "s|%PACKAGE%|$PACKAGE|g" "$PROJECT/MainActivity.java"
+sed -i "s|%PROJECT%|$PROJECT|g" "$PROJECT/strings.xml"
+sed -i "s|%PROJECT%|$PROJECT|g" "$PROJECT/.project"
+sed -i "s|%ANDROID_HOME%|$ANDROID_HOME|g" "$PROJECT/.classpath"
+sed -i "s|%ANDROID_PLATFORM%|$ANDROID_PLATFORM|g" "$PROJECT/.classpath"
+
+SRC=$PROJECT/src/${PACKAGE//./\/}
+
+mkdir -p "$SRC"
+
+mv "$PROJECT/MainActivity.java" "$SRC"
+mv "$PROJECT/strings.xml" "$PROJECT/res/values"
+
+echo "Project created successfully."
+
+# End
+
+

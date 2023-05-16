@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+
+# Build And Deploy Package
+
+set -e
+
+if [ ! -f AndroidManifest.xml ]; then
+	echo "Error: this command must be run from the project root directory."
+	exit 1
+fi
+
+KEYSTORE=$HOME/.config/android-debug.keystore
+
+if [ ! -f "$KEYSTORE" ]; then
+	echo "Error: keystore not found."
+	exit 1
+fi
+
+PACKAGE=${PWD##*/}.apk
+
+DEPLOY=1
+
+[ "$1" == "--nodeploy" ] && DEPLOY=0
+
+rm -f "$PACKAGE"
+
+ANDROID_JAR=$ANDROID_HOME/platforms/$ANDROID_PLATFORM/android.jar
+
+d8 --lib "$ANDROID_JAR" $(find bin -type f -name '*.class')
+
+aapt package -f --debug-mode \
+	-I "$ANDROID_JAR" \
+	-M AndroidManifest.xml \
+	-S res \
+	-F "$PACKAGE.unaligned"
+  
+aapt add -f "$PACKAGE.unaligned" classes.dex
+
+jarsigner \
+	-keystore "$KEYSTORE" \
+	-storepass android \
+	-keypass android \
+	"$PACKAGE.unaligned" androiddebugkey
+
+zipalign 4 "$PACKAGE.unaligned" "$PACKAGE"
+
+rm classes.dex
+rm "$PACKAGE.unaligned"
+
+[ $DEPLOY == 1 ] && adb install -r "$PACKAGE"
+
+# End
+
